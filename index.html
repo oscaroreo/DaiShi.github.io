@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dai Shi</title>
+<meta name="description" content="Dai Shi — M.Eng. student in Human–Computer Interaction at Tongji University. Egocentric AI, multimodal LLMs, user internal-state reasoning, proactive human–AI interaction.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400&family=Figtree:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#000; --mute:#6f6f6f; --faint:#a9a9a9; --line:#e6e6e6; --paper:#fff;
+    --serif:"Newsreader","Iowan Old Style","Songti SC",Georgia,serif;
+    --sans:"Figtree","Helvetica Neue",Helvetica,Arial,"PingFang SC",sans-serif;
+    --col-l:18vw;            /* left offset of the reading column */
+    --col-w:600px;           /* reading column width */
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth; overflow-x:clip}
+  main,body{overflow-x:clip}
+  body{
+    font-family:var(--sans); font-size:14px; line-height:1.62; letter-spacing:.018em;
+    color:var(--ink); background:var(--paper); -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  a{color:inherit; text-decoration:none}
+  .u{background-image:linear-gradient(currentColor,currentColor); background-size:100% 1px;
+     background-repeat:no-repeat; background-position:0 100%; padding-bottom:1px; transition:background-size .3s}
+  .u:hover{background-size:0 1px; background-position:100% 100%}
+  ::selection{background:#ffe7a8}
+
+  /* ---------- top bar ---------- */
+  .bar{
+    position:fixed; inset:0 0 auto 0; height:60px; z-index:50;
+    display:grid; grid-template-columns:1fr auto 1fr; align-items:center;
+    padding:0 26px; pointer-events:none;
+    background:linear-gradient(#fff 62%, rgba(255,255,255,0));
+  }
+  .bar > *{pointer-events:auto}
+  .logo{font-family:var(--serif); font-size:19px; font-weight:500; letter-spacing:0}
+  .clock{font-size:13px; color:var(--ink); font-variant-numeric:tabular-nums}
+  .menu-btn{justify-self:end; font:inherit; font-size:13px; background:none; border:0; cursor:pointer; color:inherit; letter-spacing:.04em}
+
+  /* ---------- overlay menu ---------- */
+  .overlay{
+    position:fixed; inset:0; z-index:60; background:var(--paper);
+    display:flex; flex-direction:column; justify-content:center; padding:0 var(--col-l);
+    opacity:0; visibility:hidden; transition:opacity .35s ease, visibility .35s;
+  }
+  .overlay.open{opacity:1; visibility:visible}
+  .overlay a{font-family:var(--serif); font-size:clamp(34px,5.2vw,64px); line-height:1.18; display:block; width:max-content}
+  .overlay a:hover{font-style:italic}
+  .overlay .close{position:absolute; top:19px; right:26px; font-size:13px; background:none; border:0; cursor:pointer; font-family:var(--sans)}
+  .overlay .small{margin-top:40px; font-size:13px; color:var(--mute); font-family:var(--sans)}
+  .overlay .small a{font-family:var(--sans); font-size:13px; display:inline; color:var(--ink)}
+
+  /* ---------- layout ---------- */
+  main{position:relative; z-index:2}
+  .col{margin-left:var(--col-l); width:min(var(--col-w), calc(100vw - var(--col-l) - 26px))}
+  section{padding-top:110px}
+  .label{font-size:12px; color:var(--mute); letter-spacing:.08em; margin-bottom:22px; display:flex; gap:10px}
+  .label i{font-style:normal; color:var(--faint)}
+
+  /* ---------- hero ---------- */
+  .hero{min-height:92vh; display:flex; flex-direction:column; justify-content:flex-end; padding-bottom:9vh}
+  .lede{font-family:var(--serif); font-size:clamp(26px,2.9vw,40px); line-height:1.22; letter-spacing:-.005em; max-width:760px}
+  .lede em{font-style:italic}
+  .hero .meta{margin-top:34px; font-size:13px; color:var(--mute); display:flex; flex-wrap:wrap; gap:6px 28px}
+  .hero .meta a{color:var(--ink)}
+
+  /* ---------- about ---------- */
+  .about p + p{margin-top:1em}
+  .about p{text-align:left}
+
+  /* ---------- news ---------- */
+  .news li{list-style:none; display:grid; grid-template-columns:92px 1fr; gap:14px; padding:9px 0; border-top:1px solid var(--line)}
+  .news li:last-child{border-bottom:1px solid var(--line)}
+  .news time{color:var(--mute); font-variant-numeric:tabular-nums}
+
+  /* ---------- interests ---------- */
+  .tags{display:flex; flex-wrap:wrap; gap:8px 8px}
+  .tags span{border:1px solid var(--ink); border-radius:999px; padding:3px 12px 4px; font-size:13px}
+
+  /* ---------- publications ---------- */
+  .pub{padding:18px 0 20px; border-top:1px solid var(--line); display:grid; grid-template-columns:92px 1fr; gap:14px}
+  .pub:last-child{border-bottom:1px solid var(--line)}
+  .pub .v{color:var(--mute); font-size:13px}
+  .pub .t{font-family:var(--serif); font-size:19px; line-height:1.3; margin-bottom:6px}
+  .pub .a{color:var(--mute); font-size:13px}
+  .pub .a b{color:var(--ink); font-weight:500}
+  .pub .s{margin-top:8px; font-size:12.5px; display:flex; flex-wrap:wrap; gap:4px 16px}
+  .pub .s .st{color:var(--mute)}
+  .pub .s .st.ok{color:var(--ink)}
+  .pub-fig{margin:18px 0 4px; width:min(calc(100% + 14vw), 860px)}
+  .pub-fig a{display:block; border:1px solid var(--line); background:#fff; padding:10px; transition:border-color .25s}
+  .pub-fig a:hover{border-color:var(--ink)}
+  .pub-fig img{display:block; width:100%; height:auto}
+  .pub-fig figcaption{margin-top:8px; font-size:12.5px; line-height:1.55; color:var(--mute); max-width:600px}
+  .pub-fig figcaption b{color:var(--ink); font-weight:500}
+
+  /* ---------- experience ---------- */
+  .xp{display:grid; grid-template-columns:92px 1fr; gap:14px; padding:12px 0; border-top:1px solid var(--line)}
+  .xp:last-of-type{border-bottom:1px solid var(--line)}
+  .xp .d{color:var(--mute); font-size:13px; font-variant-numeric:tabular-nums}
+  .xp .r{font-weight:500}
+  .xp .o{color:var(--mute)}
+  .xp p{margin-top:4px; font-size:13.5px}
+  .sub-label{margin:40px 0 14px; font-size:12px; color:var(--mute); letter-spacing:.08em}
+
+  /* ---------- works (Olafur-like feed) ---------- */
+  .works{padding-top:130px}
+  .work{position:relative; margin-top:90px}
+  .work:first-of-type{margin-top:30px}
+  .w-hero{display:block; overflow:hidden; background:#f4f4f4}
+  .w-hero img{display:block; width:100%; height:auto; transition:transform 1.2s cubic-bezier(.2,.7,.2,1)}
+  .w-hero:hover img{transform:scale(1.025)}
+  .w1 .w-hero{margin-left:calc(var(--col-l) - 4vw); width:min(46vw,720px)}
+  .w2 .w-hero{margin-left:calc(var(--col-l) + 10vw); width:min(52vw,820px)}
+  .w-text{margin-top:22px}
+  .w1 .w-text{margin-left:calc(var(--col-l) - 4vw); max-width:560px}
+  .w2 .w-text{margin-left:calc(var(--col-l) + 10vw); max-width:560px}
+  .w-title{font-family:var(--serif); font-size:24px; line-height:1.2}
+  .w-title .zh{font-family:"Songti SC","Noto Serif SC",serif; font-size:19px; margin-left:8px}
+  .w2 .w-title .zh{display:block; margin:4px 0 0}
+  .w-kicker{font-size:12.5px; color:var(--mute); margin:6px 0 14px}
+  .w-text p + p{margin-top:.8em}
+  .works-intro{font-family:var(--serif); font-size:19px; line-height:1.45; letter-spacing:0; max-width:600px}
+  .link-r{font-size:12.5px; color:var(--mute); font-style:italic}
+  .w-foot{margin-top:14px; font-size:12.5px; color:var(--mute); display:flex; gap:22px; flex-wrap:wrap}
+  .w-foot a{color:var(--ink)}
+
+  .strip{display:grid; gap:12px; margin-top:34px}
+  .w1 .strip{margin-left:calc(var(--col-l) + 26vw); width:min(52vw,760px); grid-template-columns:1.25fr 1fr}
+  .w2 .strip{margin-left:calc(var(--col-l) - 8vw); width:min(60vw,900px); grid-template-columns:1fr 1fr}
+  .strip figure{overflow:hidden; background:#f4f4f4}
+  .strip img{display:block; width:100%; height:100%; object-fit:cover}
+  .strip figcaption, .cap{font-size:12px; color:var(--mute); margin-top:6px}
+  .w1 .strip .tall{grid-row:span 2}
+  .w1 .strip.poster-only{grid-template-columns:1fr; width:min(28vw,420px)}
+  .w1 .strip.poster-only figure{background:none}
+  .w2 .strip{align-items:start}
+  .w2 .strip img{height:auto; object-fit:initial}
+
+  /* ---------- films ---------- */
+  .film{position:relative; margin-top:40px}
+  .w1 .film{margin-left:calc(var(--col-l) + 6vw); width:min(62vw,980px)}
+  .w2 .film{margin-left:calc(var(--col-l) - 2vw); width:min(56vw,880px)}
+  .film video{display:block; width:100%; height:auto; aspect-ratio:16/9; background:#000; object-fit:contain}
+  .w2 .film video{aspect-ratio:107/60; background:#111}
+  .film-play{
+    position:absolute; left:16px; bottom:44px; z-index:2;
+    font:inherit; font-size:13px; letter-spacing:.04em; color:#fff; cursor:pointer;
+    background:rgba(0,0,0,.35); border:1px solid rgba(255,255,255,.75); border-radius:999px;
+    padding:7px 16px 8px 34px; backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+    transition:background .25s;
+  }
+  .film-play::before{content:""; position:absolute; left:15px; top:50%; transform:translateY(-50%);
+    border-left:9px solid #fff; border-top:5.5px solid transparent; border-bottom:5.5px solid transparent}
+  .film-play span{opacity:.7; margin-left:6px; font-variant-numeric:tabular-nums}
+  .film-play:hover{background:rgba(0,0,0,.6)}
+  .film.playing .film-play{opacity:0; pointer-events:none}
+  .film figcaption{font-size:12px; color:var(--mute); margin-top:8px}
+
+  /* ---------- floating fragments (from "Threshold Feeling") ---------- */
+  .float{position:absolute; z-index:1; pointer-events:none; will-change:transform;
+         filter:drop-shadow(0 18px 30px rgba(0,0,0,.10))}
+  .float img{display:block; width:100%; height:auto}
+
+  /* ---------- footer ---------- */
+  footer{padding:160px 0 60px}
+  footer .big{font-family:var(--serif); font-size:clamp(26px,2.9vw,40px); line-height:1.22}
+  footer .fine{margin-top:60px; font-size:12px; color:var(--faint); display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; padding-right:26px}
+
+  /* ---------- reveal ---------- */
+  .rv{opacity:0; transform:translateY(18px); transition:opacity .9s ease, transform .9s ease}
+  .rv.in{opacity:1; transform:none}
+
+  @media (max-width:820px){
+    :root{--col-l:22px}
+    .bar{padding:0 18px}
+    .clock{display:none}
+    .bar{grid-template-columns:1fr 1fr}
+    .w1 .w-hero,.w2 .w-hero,.w1 .w-text,.w2 .w-text,.w1 .strip,.w2 .strip{margin-left:22px; width:calc(100vw - 44px); max-width:none}
+    .w1 .strip,.w2 .strip{grid-template-columns:1fr}
+    .w1 .film,.w2 .film{margin-left:22px; width:calc(100vw - 44px)}
+    .w1 .strip.poster-only{width:calc(100vw - 44px)}
+    .pub-fig{width:100%}
+    .w1 .strip .tall{grid-row:auto}
+    .news li,.pub,.xp{grid-template-columns:1fr; gap:2px}
+    .float{opacity:.55}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .rv{opacity:1; transform:none; transition:none}
+    .float{transform:none !important}
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ TOP BAR ============ -->
+<div class="bar">
+  <a class="logo" href="#top">Dai Shi</a>
+  <div class="clock" id="clock" title="Local time in Shanghai">Shanghai</div>
+  <button class="menu-btn" id="menuBtn" aria-expanded="false">Menu</button>
+</div>
+
+<nav class="overlay" id="overlay" aria-hidden="true">
+  <button class="close" id="closeBtn">Close</button>
+  <a href="#about">About</a>
+  <a href="#research">Research</a>
+  <a href="#publications">Publications</a>
+  <a href="#experience">Experience</a>
+  <a href="#works">Design &amp; Art</a>
+  <a href="CV_Dai_Shi.pdf" target="_blank" rel="noopener">CV</a>
+  <div class="small">
+    <a class="u" href="mailto:shidai@tongji.edu.cn">shidai@tongji.edu.cn</a> &nbsp;·&nbsp;
+    <a class="u" href="https://scholar.google.com/citations?user=CT9wvxwAAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a>
+  </div>
+</nav>
+
+<!-- floating point-cloud fragments -->
+<div class="float" data-speed="-0.18" style="top:8vh; right:9vw; width:clamp(150px,17vw,280px)"><img src="assets/float4.png" alt=""></div>
+<div class="float" data-speed="0.12" style="top:128vh; right:4vw; width:clamp(90px,9vw,150px)"><img src="assets/float2.png" alt=""></div>
+<div class="float" data-speed="-0.10" style="top:250vh; left:3vw; width:clamp(80px,8vw,130px)"><img src="assets/float3.png" alt=""></div>
+<div class="float" data-speed="0.16" style="top:372vh; right:7vw; width:clamp(100px,10vw,170px)"><img src="assets/float1.png" alt=""></div>
+<div class="float" data-speed="-0.14" style="top:560vh; right:14vw; width:clamp(100px,10vw,160px)"><img src="assets/float5.png" alt=""></div>
+
+<main id="top">
+
+  <!-- ============ HERO ============ -->
+  <header class="hero col">
+    <p class="lede rv">Dai Shi studies how AI might understand what a person <em>feels</em>, <em>intends</em> and <em>remembers</em> — and earn the <em>trust</em> to act on it.</p>
+    <div class="meta rv">
+      <span>M.Eng. Human–Computer Interaction, Tongji University</span>
+      <a class="u" href="mailto:shidai@tongji.edu.cn">shidai@tongji.edu.cn</a>
+      <a class="u" href="https://scholar.google.com/citations?user=CT9wvxwAAAAJ&amp;hl=en" target="_blank" rel="noopener">Google Scholar</a>
+      <a class="u" href="CV_Dai_Shi.pdf" target="_blank" rel="noopener">CV (PDF)</a>
+    </div>
+  </header>
+
+  <!-- ============ ABOUT ============ -->
+  <section id="about" class="col about">
+    <div class="label rv">About</div>
+    <p class="rv">I am a graduate student in Human–Computer Interaction at Tongji University, advised by Prof. Qi Wang. I work towards <b>proactive AI</b> — assistants that help before they are asked. Such an assistant has to get two things right at once: it must read a person correctly, and what it offers must deserve to be believed. Get the first wrong and help becomes intrusion; get the second wrong and it becomes misdirection.</p>
+    <p class="rv">My research treats these as one problem. On the side of understanding, I build egocentric datasets, benchmarks and models that let multimodal systems reason about a user’s intentions, emotions and memories from first-person and wearable signals (<a class="u" href="#publications">EgoIntrospect</a>, EgoX-Interact). On the side of trust, I study how language models and people verify claims when evidence conflicts (<a class="u" href="#publications">CoVer</a>, CANote, Community Notes on X), and how interfaces can quietly deceive the very users who depend on them — screen-reader users facing dark patterns, blind students learning through tactile displays. Across both, the question is the same: when a machine stands between a person and the world, how does it perceive them faithfully and inform them honestly?</p>
+    <p class="rv">I trained as an industrial designer at Hunan University (rank 1/94) and still keep a practice in <a class="u" href="#works">design &amp; art</a> — installations and interfaces where these questions first surfaced for me, before I had the methods to study them. I have also worked on applied multimodal AI at Tencent and ByteDance.</p>
+    <p class="rv">I am looking for PhD positions starting in 2027.</p>
+  </section>
+
+  <!-- ============ NEWS ============ -->
+  <section class="col">
+    <div class="label rv">News</div>
+    <ul class="news rv">
+      <li><time>2026</time><span><i>CoVer</i> accepted to <b>EMNLP 2026</b> (co-first author).</span></li>
+      <li><time>2026</time><span>Paper on fact-checking comments and Community Notes accepted to <b>ICWSM 2026</b> (co-first author).</span></li>
+      <li><time>Jul 2026</time><span>Joined Tencent WeChat as an AI strategy intern.</span></li>
+      <li><time>Jun 2026</time><span><i>CANote</i> released on arXiv.</span></li>
+      <li><time>May 2026</time><span><i>EgoIntrospect</i> released on arXiv; under review at NeurIPS 2026 Datasets &amp; Benchmarks.</span></li>
+      <li><time>2025</time><span>Paper on tactile displays for blind students’ inclusive education published in <i>Zhuangshi</i>.</span></li>
+      <li><time>2025</time><span>Paper on dark patterns for screen-reader users at <b>CSCW 2025 Companion</b>.</span></li>
+    </ul>
+  </section>
+
+  <!-- ============ RESEARCH ============ -->
+  <section id="research" class="col">
+    <div class="label rv">Research interests</div>
+    <div class="tags rv">
+      <span>Egocentric &amp; wearable computing</span>
+      <span>Multimodal large language models</span>
+      <span>User internal-state modeling</span>
+      <span>Proactive human–AI interaction</span>
+      <span>Trustworthy AI &amp; fact-checking</span>
+      <span>Accessibility</span>
+    </div>
+  </section>
+
+  <!-- ============ PUBLICATIONS ============ -->
+  <section id="publications" class="col">
+    <div class="label rv">Publications <i>* equal contribution</i></div>
+
+    <article class="pub rv">
+      <div class="v">EMNLP 2026</div>
+      <div>
+        <div class="t">CoVer: Conflict-Aware Claim Verification</div>
+        <div class="a">Shuning Zhang*, <b>Dai Shi</b>*, Bohao Chu, Hui Wang, Yuwei Chuai, Yifan Wang, Jingruo Chen, Simin Li, Xin Yi, Hewu Li</div>
+        <div class="s"><span class="st ok">Accepted</span><a class="u" href="https://arxiv.org/abs/2609.00508" target="_blank" rel="noopener">arXiv</a><a class="u" href="https://arxiv.org/pdf/2609.00508" target="_blank" rel="noopener">PDF</a></div>
+        <figure class="pub-fig">
+          <a href="assets/papers/cover-framework.jpg" target="_blank" rel="noopener"><img src="assets/papers/cover-framework.jpg" alt="CoVer framework: evidence schema normalization, factual consensus, and support verification" loading="lazy"></a>
+          <figcaption><b>Framework.</b> CoVer normalizes heterogeneous evidence into a shared schema, scores each item for stance and quality, lets an adjudicator select a mutually consistent subset, and verifies the claim only against that subset — so conflicting or low-quality evidence cannot tip the verdict.</figcaption>
+        </figure>
+      </div>
+    </article>
+
+    <article class="pub rv">
+      <div class="v">arXiv 2026</div>
+      <div>
+        <div class="t">EgoIntrospect: An Egocentric Dataset and Benchmark for User-Centric Internal State Reasoning</div>
+        <div class="a">Zeyu Wang, Chang Liu, Eduardus Tjitrahardja, Yuntao Wang, Borislav Pavlov, Fangfei Gou, José Manuel Dávila, <b>Dai Shi</b>, Ran Xu, Yue Pan, Jiayi Tan, Shuting Chang, et al. (25 authors), Miao Liu</div>
+        <div class="s"><span class="st">Under review, NeurIPS 2026 D&amp;B</span><a class="u" href="https://arxiv.org/abs/2605.17262" target="_blank" rel="noopener">arXiv</a><a class="u" href="https://arxiv.org/pdf/2605.17262" target="_blank" rel="noopener">PDF</a></div>
+        <figure class="pub-fig">
+          <a href="assets/papers/egointrospect-overview.jpg" target="_blank" rel="noopener"><img src="assets/papers/egointrospect-overview.jpg" alt="EgoIntrospect capture and annotation overview: wearable sensor suite and three task dimensions" loading="lazy"></a>
+          <figcaption><b>Capture &amp; annotation.</b> Participants wear eye-tracking glasses, a physiological watch, a smart ring and a smartwatch through their daily routines; synchronized video, gaze, IMU, PPG, EDA and environment signals are annotated along three dimensions of internal state — affective experience, interactive intent and cognitive memory.</figcaption>
+        </figure>
+      </div>
+    </article>
+
+    <article class="pub rv">
+      <div class="v">ICWSM 2026</div>
+      <div>
+        <div class="t">Fact-Checking Comments on Misleading Posts Precede Community Notes on X</div>
+        <div class="a">Shuning Zhang*, <b>Dai Shi</b>*, Yuwei Chuai, Jingruo Chen, Yifan Wang, Hui Wang, Gabriele Lenzini, Xin Yi, Hewu Li</div>
+        <div class="s"><span class="st ok">Accepted</span><a class="u" href="https://arxiv.org/abs/2509.11052" target="_blank" rel="noopener">arXiv</a><a class="u" href="https://arxiv.org/pdf/2509.11052" target="_blank" rel="noopener">PDF</a></div>
+        <figure class="pub-fig">
+          <a href="assets/papers/fc-comments-latency.svg" target="_blank" rel="noopener"><img src="assets/papers/fc-comments-latency.svg" alt="Cumulative percentage of fact-checking comments over hours since post creation, with note-creation times marked" loading="lazy"></a>
+          <figcaption><b>Key finding.</b> Across 2.2M comments on 1,841 misleading posts, 99.4% of posts receive a fact-checking comment before any community note exists: the median first correction arrives in 0.1 h, the median note in 9.7 h (dashed red line).</figcaption>
+        </figure>
+      </div>
+    </article>
+
+    <article class="pub rv">
+      <div class="v">CSCW 2025<br>Companion</div>
+      <div>
+        <div class="t">When Accessibility Becomes a Trap: A User-Centric Characterization of Dark Patterns Arising from Screen Reader Users’ Perceived Deception in Mobile Interfaces</div>
+        <div class="a"><b>Dai Shi</b>, Lin Tian, Jiaxun Sun, Tomomi Kawakami, Nuo Cheng, Shuchang Xu, Guanhong Liu</div>
+        <div class="s"><span class="st">pp. 340–345</span><a class="u" href="https://doi.org/10.1145/3715070.3749249" target="_blank" rel="noopener">DOI</a></div>
+      </div>
+    </article>
+
+    <article class="pub rv">
+      <div class="v">arXiv 2026</div>
+      <div>
+        <div class="t">CANote: Empowering Fact-checking Note Writing Through Scaffolded and Provenance-based Human–AI Collaboration</div>
+        <div class="a">Shuning Zhang, Jingruo Chen, Yuwei Chuai, <b>Dai Shi</b>, Yifan Wang, Xin Yi, Hewu Li</div>
+        <div class="s"><a class="u" href="https://arxiv.org/abs/2606.07101" target="_blank" rel="noopener">arXiv</a><a class="u" href="https://arxiv.org/pdf/2606.07101" target="_blank" rel="noopener">PDF</a></div>
+      </div>
+    </article>
+
+    <article class="pub rv">
+      <div class="v">Zhuangshi<br>2025</div>
+      <div>
+        <div class="t">Application Innovation of Large-Format Tactile Displays for Digitally Integrated Education in Schools for the Blind</div>
+        <div class="a">Yang Jiao, Ye Wei, Xiuqi Zhu, <b>Dai Shi</b></div>
+        <div class="s"><span class="st"><i>Zhuangshi</i> (装饰), 2025(03): 28–32 · in Chinese</span><a class="u" href="https://doi.org/10.16272/j.cnki.cn11-1392/j.2025.03.028" target="_blank" rel="noopener">DOI</a></div>
+      </div>
+    </article>
+
+    <article class="pub rv">
+      <div class="v">AHFE 2023</div>
+      <div>
+        <div class="t">User Experience Design of Hand-Held Beauty Device</div>
+        <div class="a"><b>Dai Shi</b>, Ai Zhang, Jing Ou, Haining Wang</div>
+        <div class="s"><span class="st">Ergonomics in Design, Vol. 77, pp. 233–242</span><a class="u" href="https://doi.org/10.54941/ahfe1003381" target="_blank" rel="noopener">DOI</a></div>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ EXPERIENCE ============ -->
+  <section id="experience" class="col">
+    <div class="label rv">Research experience</div>
+
+    <div class="xp rv">
+      <div class="d">2025 –</div>
+      <div>
+        <div class="r">EgoX-Interact: Egocentric Interaction Dataset &amp; Foundation Model</div>
+        <div class="o">Pi Lab, Tsinghua University</div>
+        <p>A cross-device, cross-scenario egocentric interaction dataset with a semi-automated collection and annotation platform, and a foundation model for 5+ first-person tasks.</p>
+      </div>
+    </div>
+    <div class="xp rv">
+      <div class="d">2023</div>
+      <div>
+        <div class="r">Tactile Display for Blind Users</div>
+        <div class="o">Future Lab, Tsinghua University</div>
+        <p>Interaction design and evaluation with 50+ visually impaired participants; built for a China Disabled Persons’ Federation affiliate and now used in classrooms for visually impaired students. Published in <i>Zhuangshi</i> (2025).</p>
+      </div>
+    </div>
+
+    <div class="sub-label rv">Applied AI</div>
+    <div class="xp rv"><div class="d">2026 –</div><div><span class="r">WeChat “Xiaowei” Assistant</span> <span class="o">· Tencent</span><p>Behavioural logging, intent taxonomy and online evaluation for a production conversational assistant.</p></div></div>
+    <div class="xp rv"><div class="d">2026</div><div><span class="r">Yuanbao Education</span> <span class="o">· Tencent</span><p>Multimodal retrieval and ranking, style-alignment SFT, multi-agent tutoring with LLM-as-Judge evaluation.</p></div></div>
+    <div class="xp rv"><div class="d">2025</div><div><span class="r">Large Multimodal Models</span> <span class="o">· ByteDance</span><p>CoT distillation data, a video-understanding benchmark, and GUI-agent trajectories with reward modelling.</p></div></div>
+    <div class="xp rv"><div class="d">2022</div><div><span class="r">ColorOS Gesture Standard</span> <span class="o">· OPPO</span><p>Human-factors study of 10 core gestures; results adopted into the ColorOS universal design standard.</p></div></div>
+  </section>
+
+  <!-- ============ WORKS ============ -->
+  <section id="works" class="works">
+    <div class="col">
+      <div class="label rv">Design &amp; Art</div>
+      <p class="works-intro rv">Before I had research methods, I had a design and art practice — and I have kept it. The two pieces here are where the questions in my research first took shape. <i>Threshold Feeling</i> asks how an atmosphere is sensed before it can be named, the same gap between what a person feels and what they can say that my egocentric work tries to close. The satellite-operations interface asks when an operator should act on an AI’s suggestion under pressure, a small first encounter with the problem of trust in proactive systems.</p>
+    </div>
+
+    <!-- Work 1: Threshold Feeling -->
+    <article class="work w1">
+      <a class="w-hero rv" href="https://pinwall.cn/project/52669" target="_blank" rel="noopener">
+        <img src="assets/th_install.jpg" alt="Visitors interacting with the Threshold Feeling installation: a projected point-cloud image of a window on a brick wall" loading="lazy">
+      </a>
+      <div class="w-text rv">
+        <div class="w-title">Threshold Feeling <span class="zh">阈感</span></div>
+        <div class="w-kicker">Interactive installation · Graduation project, Hunan University · 2024 · advised by Hao Tan</div>
+        <p>Some of what shapes our mood barely registers: the air on a station platform we stepped out onto by chance, a stranger’s expression, a book found without looking. Made under the theme of <i>emergency</i>, <i>Threshold Feeling</i> tries to give these near-imperceptible atmospheres a body — rendering everyday objects as drifting fields of points that visitors approach and disturb.</p>
+        <p>The fragments floating across this page are taken from the project.</p>
+        <p class="link-r">→ Research thread: internal states that resist being put into words.</p>
+        <div class="w-foot"><span>Concept, interaction, visuals</span><a class="u" href="https://pinwall.cn/project/52669" target="_blank" rel="noopener">View on Pinwall ↗</a></div>
+      </div>
+      <figure class="film rv" data-dur="4:30">
+        <video preload="none" playsinline poster="assets/video/threshold-feeling.jpg">
+          <source src="assets/video/threshold-feeling.mp4" type="video/mp4">
+        </video>
+        <button class="film-play" type="button" aria-label="Play Threshold Feeling film">Play film <span>4:30</span></button>
+        <figcaption>Threshold Feeling, film of the installation, 2024 · sound on</figcaption>
+      </figure>
+      <div class="strip poster-only">
+        <figure class="rv"><img src="assets/th_cover.jpg" alt="Threshold Feeling poster" loading="lazy"><figcaption>Exhibition poster</figcaption></figure>
+      </div>
+    </article>
+
+    <!-- Work 2: Satellite network O&M -->
+    <article class="work w2">
+      <a class="w-hero rv" href="https://pinwall.cn/project/46186" target="_blank" rel="noopener">
+        <img src="assets/sn_ui.jpg" alt="Digital-twin interfaces for satellite network operations" loading="lazy">
+      </a>
+      <div class="w-text rv">
+        <div class="w-title">AI-Assisted Satellite-Network Operations <span class="zh">L2 情境下智能辅助星网运维系统</span></div>
+        <div class="w-kicker">Interface design · HCI course, Hunan University · 2022 · with Zhang Ai, advised by Hao Tan</div>
+        <p>An AI-assisted operations system for a communication-satellite network, designed around an emergency collision-avoidance scenario. The system monitors satellite states, flags anomalies and drafts operation reports; operators work through a three-level digital-twin interface — constellation, single satellite, and satellite-plus-debris — to inspect telemetry and command orbit changes.</p>
+        <p>Starting from unfamiliar territory, we read into satellite operations, mapped the operator’s journey and interaction motives, and iterated on three views that differ in scale but share one logic.</p>
+        <p class="link-r">→ Research thread: calibrated trust between a person and an assistant that acts first.</p>
+        <div class="w-foot"><span>My role: research, high-fidelity UI, ProtoPie prototype</span><a class="u" href="https://pinwall.cn/project/46186" target="_blank" rel="noopener">View on Pinwall ↗</a></div>
+      </div>
+      <figure class="film rv" data-dur="1:36">
+        <video preload="none" playsinline poster="assets/video/satellite-ops.jpg">
+          <source src="assets/video/satellite-ops.mp4" type="video/mp4">
+        </video>
+        <button class="film-play" type="button" aria-label="Play satellite operations interface demo">Play demo <span>1:36</span></button>
+        <figcaption>Interface walkthrough: issue list, digital-twin views, orbit manoeuvre simulation · video by Zhang Ai</figcaption>
+      </figure>
+      <div class="strip">
+        <figure class="rv"><img src="assets/sn_ia.jpg" alt="Information architecture: main view, issue list, three digital-twin views" loading="lazy"><figcaption>Information architecture</figcaption></figure>
+        <figure class="rv"><img src="assets/sn_journey.jpg" alt="Fault-handling flow: traditional versus AI-assisted" loading="lazy"><figcaption>Fault handling, traditional vs. AI-assisted</figcaption></figure>
+      </div>
+    </article>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="col" id="contact">
+    <div class="label rv">Contact</div>
+    <p class="big rv"><a class="u" href="mailto:shidai@tongji.edu.cn">shidai@tongji.edu.cn</a></p>
+    <div class="fine">
+      <span>Dai Shi · Shanghai</span>
+      <span><a class="u" href="https://scholar.google.com/citations?user=CT9wvxwAAAAJ&amp;hl=en" target="_blank" rel="noopener">Scholar</a> &nbsp; <a class="u" href="CV_Dai_Shi.pdf" target="_blank" rel="noopener">CV</a> &nbsp; Updated Sep 2026</span>
+    </div>
+  </footer>
+</main>
+
+<script>
+  // Shanghai clock
+  const clk = document.getElementById('clock');
+  const tick = () => {
+    const t = new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Shanghai',hour:'2-digit',minute:'2-digit'}).format(new Date());
+    clk.textContent = 'Shanghai ' + t;
+  };
+  tick(); setInterval(tick, 20000);
+
+  // Menu overlay
+  const ov = document.getElementById('overlay'), mb = document.getElementById('menuBtn');
+  const setMenu = (o) => { ov.classList.toggle('open', o); ov.setAttribute('aria-hidden', !o); mb.setAttribute('aria-expanded', o); };
+  mb.onclick = () => setMenu(true);
+  document.getElementById('closeBtn').onclick = () => setMenu(false);
+  ov.querySelectorAll('a[href^="#"]').forEach(a => a.addEventListener('click', () => setMenu(false)));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') setMenu(false); });
+
+  // Reveal on scroll
+  const io = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } }), {rootMargin:'0px 0px -8% 0px'});
+  document.querySelectorAll('.rv').forEach(el => io.observe(el));
+
+  // Films: load only on click; one playing at a time
+  document.querySelectorAll('.film').forEach(fig => {
+    const v = fig.querySelector('video'), b = fig.querySelector('.film-play');
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.film video').forEach(o => { if (o !== v) o.pause(); });
+      v.controls = true; v.play();
+    });
+    v.addEventListener('play',  () => fig.classList.add('playing'));
+    v.addEventListener('ended', () => { fig.classList.remove('playing'); v.controls = false; v.load(); });
+  });
+
+  // Floating fragments: slow parallax drift + gentle rotation
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const floats = [...document.querySelectorAll('.float')];
+  let ticking = false;
+  const drift = () => {
+    const y = scrollY;
+    floats.forEach((f,i) => {
+      const s = parseFloat(f.dataset.speed);
+      f.style.transform = `translate3d(0, ${y*s}px, 0) rotate(${(y*s*0.04 + i*7).toFixed(2)}deg)`;
+    });
+    ticking = false;
+  };
+  if (!reduce){ addEventListener('scroll', () => { if(!ticking){ requestAnimationFrame(drift); ticking = true; } }, {passive:true}); drift(); }
+</script>
+</body>
+</html>
